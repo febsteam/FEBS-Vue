@@ -77,8 +77,6 @@ v-hasAnyRole | 当用户拥有列出的任意一个角色的时候，渲染该�
 
 ![4.png](images/4.png)
 
-![5.png](images/5.png)
-
 ![6.png](images/6.png)
 
 ![7.png](images/7.png)
