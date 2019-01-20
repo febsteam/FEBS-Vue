@@ -40,11 +40,11 @@ FEBS-Vue为[FEBS-Shiro](https://github.com/wuyouzhuguli/FEBS-Shiro)的前后端�
 - [Axios](https://github.com/axios/axios)
 - [vue-apexcharts](https://apexcharts.com/vue-chart-demos/line-charts/)
 - [ant-design-vue](https://vuecomponent.github.io/ant-design-vue/docs/vue/introduce-cn/)
-- [webpack](https://www.webpackjs.com/)，[yarn](https://yarnpkg.com/zh-Hans/)
+- [webpack](https://www.webpackjs.com/),[yarn](https://yarnpkg.com/zh-Hans/)
 
 #### 后端
 - [Spring Boot](http://spring.io/projects/spring-boot/)
-- [Mybatis](http://www.mybatis.org/mybatis-3/zh/index.html)，[TK Mapper](https://gitee.com/free/Mapper/wikis/Home)，[Pagehelper](https://gitee.com/free/Mybatis_PageHelper)
+- [Mybatis](http://www.mybatis.org/mybatis-3/zh/index.html),[TK Mapper](https://gitee.com/free/Mapper/wikis/Home),[Pagehelper](https://gitee.com/free/Mybatis_PageHelper)
 - [MySQL 5.7](https://dev.mysql.com/downloads/mysql/5.7.html#downloads),[Hikari](https://brettwooldridge.github.io/HikariCP/),[Redis](https://redis.io/)
 - [Shiro](http://shiro.apache.org/),[JWT](https://jwt.io/)
 
