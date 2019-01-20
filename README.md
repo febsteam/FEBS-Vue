@@ -61,7 +61,7 @@ FEBS-Vue为[FEBS-Shiro](https://github.com/wuyouzhuguli/FEBS-Shiro)的前后端�
 ---|---|---
 v-hasPermission | 当用户拥有列出的权限的时候，渲染该元素 |`<template v-hasPermission="'user:add','user:update'"><span>hello</span></template>`
 v-hasAnyPermission | 当用户拥有列出的任意一项权限的时候，渲染该元素 |`<template v-hasAnyPermission="'user:add','user:update'"><span>hello</span></template>`
-v-hasRole | 当用户拥有列出的角色的时候，渲染该元素 |`<template v-hasPermission="'admin','register'"><span>hello</span></template>`
+v-hasRole | 当用户拥有列出的角色的时候，渲染该元素 |`<template v-hasRole="'admin','register'"><span>hello</span></template>`
 v-hasAnyRole | 当用户拥有列出的任意一个角色的时候，渲染该元素 |`<template v-hasAnyRole="'admin','register'"><span>hello</span></template>`
 
 ### 请求流程
