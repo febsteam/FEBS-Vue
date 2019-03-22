@@ -3,17 +3,17 @@ backend/febs_shiro_jwt.iml
 backend/target/
 backend/log/
 
-frontend/.DS_Store
-frontend/node_modules
-frontend/dist/
-frontend/npm-debug.log*
-frontend/yarn-debug.log*
-frontend/yarn-error.log*
-frontend/test/unit/coverage
-frontend/test/e2e/reports
-frontend/selenium-debug.log
+front/.DS_Store
+front/node_modules
+front/dist/
+front/npm-debug.log*
+front/yarn-debug.log*
+front/yarn-error.log*
+front/test/unit/coverage
+front/test/e2e/reports
+front/selenium-debug.log
 
 # Editor directories and files
-frontend/.idea
-frontend/.vscode
-frontend/package-lock.json
+front/.idea
+front/.vscode
+front/package-lock.json

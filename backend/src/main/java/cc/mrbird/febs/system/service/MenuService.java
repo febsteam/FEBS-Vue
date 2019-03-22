@@ -1,7 +1,7 @@
 package cc.mrbird.febs.system.service;
 
+import cc.mrbird.febs.common.service.IService;
 import cc.mrbird.febs.system.domain.Menu;
-import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
 import java.util.Map;

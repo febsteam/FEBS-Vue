@@ -7,7 +7,6 @@ import cc.mrbird.febs.common.exception.FebsException;
 import cc.mrbird.febs.system.domain.Menu;
 import cc.mrbird.febs.system.manager.UserManager;
 import cc.mrbird.febs.system.service.MenuService;
-import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.wuwenze.poi.ExcelKit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -64,7 +63,7 @@ public class MenuController extends BaseController {
     @RequiresPermissions("menu:delete")
     public void deleteMenus(@NotBlank(message = "{required}") @PathVariable String menuIds) throws FebsException {
         try {
-            String[] ids = menuIds.split(StringPool.COMMA);
+            String[] ids = menuIds.split(",");
             this.menuService.deleteMeuns(ids);
         } catch (Exception e) {
             message = "删除菜单/按钮失败";

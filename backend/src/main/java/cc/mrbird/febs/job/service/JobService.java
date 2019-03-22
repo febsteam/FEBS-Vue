@@ -1,16 +1,16 @@
 package cc.mrbird.febs.job.service;
 
 import cc.mrbird.febs.common.domain.QueryRequest;
+import cc.mrbird.febs.common.service.IService;
 import cc.mrbird.febs.job.domain.Job;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
 
 public interface JobService extends IService<Job> {
 
     Job findJob(Long jobId);
 
-    IPage<Job> findJobs(QueryRequest request, Job job);
+    List<Job> findJobs(QueryRequest request, Job job);
 
     void createJob(Job job);
 

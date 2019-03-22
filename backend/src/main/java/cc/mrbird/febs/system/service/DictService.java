@@ -1,14 +1,14 @@
 package cc.mrbird.febs.system.service;
 
 import cc.mrbird.febs.common.domain.QueryRequest;
+import cc.mrbird.febs.common.service.IService;
 import cc.mrbird.febs.system.domain.Dict;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
 
 public interface DictService extends IService<Dict> {
 
-    IPage<Dict> findDicts(QueryRequest request, Dict dict);
+    List<Dict> findDicts(QueryRequest request, Dict dict);
 
     void createDict(Dict dict);
 

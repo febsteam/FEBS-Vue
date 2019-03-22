@@ -3,7 +3,6 @@ package cc.mrbird.febs.common.authentication;
 import cc.mrbird.febs.common.properties.FebsProperties;
 import cc.mrbird.febs.common.utils.FebsUtil;
 import cc.mrbird.febs.common.utils.SpringContextUtil;
-import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.UnauthorizedException;
@@ -28,7 +27,7 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) throws UnauthorizedException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         FebsProperties febsProperties = SpringContextUtil.getBean(FebsProperties.class);
-        String[] anonUrl = StringUtils.splitByWholeSeparatorPreserveAllTokens(febsProperties.getShiro().getAnonUrl(), StringPool.COMMA);
+        String[] anonUrl = StringUtils.splitByWholeSeparatorPreserveAllTokens(febsProperties.getShiro().getAnonUrl(), ",");
 
         boolean match = false;
         for (String u : anonUrl) {

@@ -13,6 +13,7 @@ import java.util.List;
  * 构建 Vue路由
  */
 @Data
+@ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class VueRouter<T> implements Serializable {
 

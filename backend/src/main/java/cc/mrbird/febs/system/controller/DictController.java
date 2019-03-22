@@ -6,7 +6,6 @@ import cc.mrbird.febs.common.domain.QueryRequest;
 import cc.mrbird.febs.common.exception.FebsException;
 import cc.mrbird.febs.system.domain.Dict;
 import cc.mrbird.febs.system.service.DictService;
-import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.wuwenze.poi.ExcelKit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -34,7 +33,7 @@ public class DictController extends BaseController {
     @GetMapping
     @RequiresPermissions("dict:view")
     public Map<String, Object> DictList(QueryRequest request, Dict dict) {
-        return getDataTable(this.dictService.findDicts(request, dict));
+        return super.selectByPageNumSize(request, () -> this.dictService.findDicts(request, dict));
     }
 
     @Log("新增字典")
@@ -55,7 +54,7 @@ public class DictController extends BaseController {
     @RequiresPermissions("dict:delete")
     public void deleteDicts(@NotBlank(message = "{required}") @PathVariable String dictIds) throws FebsException {
         try {
-            String[] ids = dictIds.split(StringPool.COMMA);
+            String[] ids = dictIds.split(",");
             this.dictService.deleteDicts(ids);
         } catch (Exception e) {
             message = "删除字典成功";
@@ -79,9 +78,9 @@ public class DictController extends BaseController {
 
     @PostMapping("excel")
     @RequiresPermissions("dict:export")
-    public void export(QueryRequest request, Dict dict, HttpServletResponse response) throws FebsException {
+    public void export(Dict dict, QueryRequest request, HttpServletResponse response) throws FebsException {
         try {
-            List<Dict> dicts = this.dictService.findDicts(request, dict).getRecords();
+            List<Dict> dicts = this.dictService.findDicts(request, dict);
             ExcelKit.$Export(Dict.class, response).downXlsx(dicts, false);
         } catch (Exception e) {
             message = "导出Excel失败";

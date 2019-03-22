@@ -100,7 +100,7 @@ yarn start
 
 #### 后端
 - [Spring Boot 2.1.0](http://spring.io/projects/spring-boot/)
-- [Mybatis-Plus](https://mp.baomidou.com/guide/)
+- [Mybatis](http://www.mybatis.org/mybatis-3/zh/index.html),[TK Mapper](https://gitee.com/free/Mapper/wikis/Home),[Pagehelper](https://gitee.com/free/Mybatis_PageHelper)
 - [MySQL 5.7](https://dev.mysql.com/downloads/mysql/5.7.html#downloads),[Hikari](https://brettwooldridge.github.io/HikariCP/),[Redis](https://redis.io/)
 - [Shiro](http://shiro.apache.org/),[JWT](https://jwt.io/)
 
@@ -111,8 +111,7 @@ yarn start
 3. 前后端请求参数校验
 4. 支持Excel导入导出
 5. 前端页面布局多样化，主题多样化
-6. 支持多数据源，代码生成
-7. 自定义Vue权限指令来控制DOM元素渲染与否：
+5. 自定义Vue权限指令来控制DOM元素渲染与否：
 
 指令 | 含义| 示例
 ---|---|---
@@ -153,8 +152,6 @@ v-hasAnyRole | 当用户拥有列出的任意一个角色的时候，渲染该�
 - [vue-antd-admin](https://github.com/iczer/vue-antd-admin)
 
 - [ExcelKit](https://gitee.com/wuwenze/ExcelKit)
-
-- [mybatis-plus](https://github.com/baomidou/mybatis-plus)
 
 ### 反馈交流
 ![QQ](images/QQ.jpg)

@@ -14,20 +14,20 @@ public class ScheduleUtils {
 
     }
 
-    private static final String JOB_NAME_PREFIX = "TASK_";
+    private static final String JOB_NAME = "TASK_";
 
     /**
      * 获取触发器key
      */
     private static TriggerKey getTriggerKey(Long jobId) {
-        return TriggerKey.triggerKey(JOB_NAME_PREFIX + jobId);
+        return TriggerKey.triggerKey(JOB_NAME + jobId);
     }
 
     /**
      * 获取jobKey
      */
     private static JobKey getJobKey(Long jobId) {
-        return JobKey.jobKey(JOB_NAME_PREFIX + jobId);
+        return JobKey.jobKey(JOB_NAME + jobId);
     }
 
     /**

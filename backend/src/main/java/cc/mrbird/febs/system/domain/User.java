@@ -2,14 +2,12 @@ package cc.mrbird.febs.system.domain;
 
 import cc.mrbird.febs.common.converter.TimeConverter;
 import cc.mrbird.febs.common.domain.RegexpConstant;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.wuwenze.poi.annotation.Excel;
 import com.wuwenze.poi.annotation.ExcelField;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -18,7 +16,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Data
-@TableName("t_user")
+@ToString
+@Table(name = "t_user")
 @Excel("用户信息表")
 public class User implements Serializable {
 
@@ -44,66 +43,88 @@ public class User implements Serializable {
     // 默认密码
     public static final String DEFAULT_PASSWORD = "1234qwer";
 
-    @TableId(value = "USER_ID", type = IdType.AUTO)
+    @Id
+    @GeneratedValue(generator = "JDBC")
+    @Column(name = "USER_ID")
     private Long userId;
 
+    @Column(name = "USERNAME")
     @Size(min = 4, max = 10, message = "{range}")
     @ExcelField(value = "用户名")
     private String username;
 
+    @Column(name = "PASSWORD")
     private String password;
 
+    @Column(name = "DEPT_ID")
     private Long deptId;
 
+    @Transient
     @ExcelField(value = "部门")
-    private transient String deptName;
+    private String deptName;
 
+    @Column(name = "EMAIL")
     @Size(max = 50, message = "{noMoreThan}")
     @Email(message = "{email}")
     @ExcelField(value = "邮箱")
     private String email;
 
+    @Column(name = "MOBILE")
     @Pattern(regexp = RegexpConstant.MOBILE_REG, message = "{mobile}")
     @ExcelField(value = "手机号")
     private String mobile;
 
+    @Column(name = "STATUS")
     @NotBlank(message = "{required}")
     @ExcelField(value = "状态", writeConverterExp = "0=锁定,1=有效")
     private String status;
 
+    @Column(name = "CREATE_TIME")
     @ExcelField(value = "创建时间", writeConverter = TimeConverter.class)
     private Date createTime;
 
+    @Column(name = "MODIFY_TIME")
     private Date modifyTime;
 
+    @Column(name = "LAST_LOGIN_TIME")
     @ExcelField(value = "最后登录时间", writeConverter = TimeConverter.class)
     private Date lastLoginTime;
 
+    @Column(name = "SSEX")
     @NotBlank(message = "{required}")
     @ExcelField(value = "性别", writeConverterExp = "0=男,1=女,2=保密")
     private String ssex;
 
+    @Column(name = "DESCRIPTION")
     @Size(max = 100, message = "{noMoreThan}")
     @ExcelField(value = "个人描述")
     private String description;
 
+    @Column(name = "AVATAR")
     private String avatar;
 
+    @Transient
     @NotBlank(message = "{required}")
-    private transient String roleId;
+    private String roleId;
+    @Transient
     @ExcelField(value = "角色")
-    private transient String roleName;
+    private String roleName;
 
     // 排序字段
-    private transient String sortField;
+    @Transient
+    private String sortField;
 
     // 排序规则 ascend 升序 descend 降序
-    private transient String sortOrder;
+    @Transient
+    private String sortOrder;
 
-    private transient String createTimeFrom;
-    private transient String createTimeTo;
+    @Transient
+    private String createTimeFrom;
+    @Transient
+    private String createTimeTo;
 
-    private transient String id;
+    @Transient
+    private String id;
 
     /**
      * shiro-redis v3.1.0 必须要有 getAuthCacheKey()或者 getId()方法

@@ -1,10 +1,10 @@
 package cc.mrbird.febs.system.service;
 
 import cc.mrbird.febs.common.domain.QueryRequest;
+import cc.mrbird.febs.common.service.IService;
 import cc.mrbird.febs.system.domain.User;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
 
 public interface UserService extends IService<User> {
 
@@ -17,13 +17,21 @@ public interface UserService extends IService<User> {
     User findByName(String username);
 
     /**
+     * 通过用户 id 查找用户
+     *
+     * @param userId userId
+     * @return user
+     */
+    User findById(String userId);
+
+    /**
      * 查询用户详情，包括基本信息，用户角色，用户部门
      *
-     * @param user user
-     * @param queryRequest queryRequest
-     * @return IPage
+     * @param user    user
+     * @param request QueryRequest
+     * @return List<User>
      */
-    IPage<User> findUserDetail(User user, QueryRequest queryRequest);
+    List<User> findUserDetail(User user, QueryRequest request);
 
     /**
      * 更新用户登录时间

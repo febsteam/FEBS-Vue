@@ -22,7 +22,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
-        <mybatis-plus.version>3.1.0</mybatis-plus.version>
     </properties>
 
     <dependencies>
@@ -36,37 +35,28 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
-        <!-- 动态数据源 -->
+        <!-- jdbc -->
         <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>dynamic-datasource-spring-boot-starter</artifactId>
-            <version>2.5.1</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.tomcat</groupId>
+                    <artifactId>tomcat-jdbc</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
-        <!-- mybatis-plus -->
+        <!-- hikaricp -->
         <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
-            <version>${mybatis-plus.version}</version>
-        </dependency>
-        <!-- 代码生成器 -->
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-generator</artifactId>
-            <version>${mybatis-plus.version}</version>
-        </dependency>
-        <!-- freemaker引擎 -->
-        <dependency>
-            <groupId>org.freemarker</groupId>
-            <artifactId>freemarker</artifactId>
-            <version>2.3.28</version>
-        </dependency>
-        <!-- sql 打印 -->
-        <dependency>
-            <groupId>p6spy</groupId>
-            <artifactId>p6spy</artifactId>
-            <version>3.8.1</version>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
         </dependency>
         <!-- commons -->
         <dependency>
@@ -87,6 +77,24 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <!-- mybatis -->
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+        <!-- 通用 mapper -->
+        <dependency>
+            <groupId>tk.mybatis</groupId>
+            <artifactId>mapper-spring-boot-starter</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+        <!-- pagehelper 分页插件 -->
+        <dependency>
+            <groupId>com.github.pagehelper</groupId>
+            <artifactId>pagehelper-spring-boot-starter</artifactId>
+            <version>1.2.10</version>
         </dependency>
         <!-- shiro-spring -->
         <dependency>
@@ -110,11 +118,17 @@
             <artifactId>shiro-redis</artifactId>
             <version>3.1.0</version>
         </dependency>
+        <!-- fastjson -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.31</version>
+        </dependency>
         <!-- ip2region -->
         <dependency>
             <groupId>org.lionsoul</groupId>
             <artifactId>ip2region</artifactId>
-            <version>1.7.2</version>
+            <version>1.7</version>
         </dependency>
         <!-- jwt -->
         <dependency>
@@ -154,19 +168,39 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <!--
+           <plugin>
+               <groupId>org.mybatis.generator</groupId>
+               <artifactId>mybatis-generator-maven-plugin</artifactId>
+               <version>1.3.5</version>
+               <dependencies>
+                   <dependency>
+                       <groupId>mysql</groupId>
+                       <artifactId>mysql-connector-java</artifactId>
+                       <version>${mysql.version}</version>
+                   </dependency>
+                   <dependency>
+                       <groupId>tk.mybatis</groupId>
+                       <artifactId>mapper</artifactId>
+                       <version>3.4.0</version>
+                   </dependency>
+               </dependencies>
+               <executions>
+                   <execution>
+                       <id>Generate MyBatis Artifacts</id>
+                       <phase>package</phase>
+                       <goals>
+                           <goal>generate</goal>
+                       </goals>
+                   </execution>
+               </executions>
+               <configuration>
+                   <verbose>true</verbose>
+                   <overwrite>true</overwrite>
+                   <configurationFile>src/main/resources/config/mybatis-generator.xml</configurationFile>
+               </configuration>
+           </plugin>
+           -->
         </plugins>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-            <resource>
-                <directory>src/main/java</directory>
-                <includes>
-                    <include>**/*.xml</include>
-                    <include>**/*.json</include>
-                </includes>
-            </resource>
-        </resources>
     </build>
 </project>

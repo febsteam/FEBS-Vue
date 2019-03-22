@@ -1,10 +1,9 @@
 package cc.mrbird.febs.system.service.impl;
 
 import cc.mrbird.febs.common.service.CacheService;
-import cc.mrbird.febs.system.dao.UserConfigMapper;
+import cc.mrbird.febs.common.service.impl.BaseService;
 import cc.mrbird.febs.system.domain.UserConfig;
 import cc.mrbird.febs.system.service.UserConfigService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -15,14 +14,14 @@ import java.util.List;
 
 @Service("userConfigService")
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
-public class UserConfigServiceImpl extends ServiceImpl<UserConfigMapper, UserConfig> implements UserConfigService {
+public class UserConfigServiceImpl extends BaseService<UserConfig> implements UserConfigService {
 
     @Autowired
     private CacheService cacheService;
 
     @Override
     public UserConfig findByUserId(String userId) {
-        return baseMapper.selectById(userId);
+        return this.selectByKey(userId);
     }
 
     @Override
@@ -36,20 +35,20 @@ public class UserConfigServiceImpl extends ServiceImpl<UserConfigMapper, UserCon
         userConfig.setLayout(UserConfig.DEFAULT_LAYOUT);
         userConfig.setTheme(UserConfig.DEFAULT_THEME);
         userConfig.setMultiPage(UserConfig.DEFAULT_MULTIPAGE);
-        baseMapper.insert(userConfig);
+        this.save(userConfig);
     }
 
     @Override
     @Transactional
     public void deleteByUserId(String... userIds) {
         List<String> list = Arrays.asList(userIds);
-        baseMapper.deleteBatchIds(list);
+        this.batchDelete(list, "userId", UserConfig.class);
     }
 
     @Override
     @Transactional
     public void update(UserConfig userConfig) throws Exception {
-        baseMapper.updateById(userConfig);
+        this.updateNotNull(userConfig);
         cacheService.saveUserConfigs(String.valueOf(userConfig.getUserId()));
     }
 }

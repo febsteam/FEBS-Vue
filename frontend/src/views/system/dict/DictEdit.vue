@@ -1,6 +1,6 @@
 <template>
   <a-drawer
-    title="修改字典"
+    title="新增字典"
     :maskClosable="false"
     width=650
     placement="right"

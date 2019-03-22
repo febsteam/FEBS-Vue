@@ -1,7 +1,7 @@
 package cc.mrbird.febs.system.dao;
 
+import cc.mrbird.febs.common.config.MyMapper;
 import cc.mrbird.febs.system.domain.Test;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
-public interface TestMapper extends BaseMapper<Test> {
+public interface TestMapper extends MyMapper<Test> {
 }

@@ -3,7 +3,6 @@ package cc.mrbird.febs.common.handler;
 import cc.mrbird.febs.common.domain.FebsResponse;
 import cc.mrbird.febs.common.exception.FebsException;
 import cc.mrbird.febs.common.exception.LimitAccessException;
-import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.UnauthorizedException;
@@ -53,7 +52,7 @@ public class GlobalExceptionHandler {
         StringBuilder message = new StringBuilder();
         List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
         for (FieldError error : fieldErrors) {
-            message.append(error.getField()).append(error.getDefaultMessage()).append(StringPool.COMMA);
+            message.append(error.getField()).append(error.getDefaultMessage()).append(",");
         }
         message = new StringBuilder(message.substring(0, message.length() - 1));
         return new FebsResponse().message(message.toString());
@@ -73,8 +72,8 @@ public class GlobalExceptionHandler {
         Set<ConstraintViolation<?>> violations = e.getConstraintViolations();
         for (ConstraintViolation<?> violation : violations) {
             Path path = violation.getPropertyPath();
-            String[] pathArr = StringUtils.splitByWholeSeparatorPreserveAllTokens(path.toString(), StringPool.DOT);
-            message.append(pathArr[1]).append(violation.getMessage()).append(StringPool.COMMA);
+            String[] pathArr = StringUtils.splitByWholeSeparatorPreserveAllTokens(path.toString(), ".");
+            message.append(pathArr[1]).append(violation.getMessage()).append(",");
         }
         message = new StringBuilder(message.substring(0, message.length() - 1));
         return new FebsResponse().message(message.toString());

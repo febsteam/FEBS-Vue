@@ -1,11 +1,11 @@
 package cc.mrbird.febs.system.dao;
 
+import cc.mrbird.febs.common.config.MyMapper;
 import cc.mrbird.febs.system.domain.Menu;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 import java.util.List;
 
-public interface MenuMapper extends BaseMapper<Menu> {
+public interface MenuMapper extends MyMapper<Menu> {
 
     List<Menu> findUserPermissions(String userName);
 

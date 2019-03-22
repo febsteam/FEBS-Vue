@@ -5,7 +5,6 @@ import cc.mrbird.febs.common.domain.QueryRequest;
 import cc.mrbird.febs.common.exception.FebsException;
 import cc.mrbird.febs.job.domain.JobLog;
 import cc.mrbird.febs.job.service.JobLogService;
-import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.wuwenze.poi.ExcelKit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -32,14 +31,14 @@ public class JobLogController extends BaseController {
     @GetMapping
     @RequiresPermissions("jobLog:view")
     public Map<String, Object> jobLogList(QueryRequest request, JobLog log) {
-        return getDataTable(this.jobLogService.findJobLogs(request, log));
+        return super.selectByPageNumSize(request, () -> this.jobLogService.findJobLogs(request, log));
     }
 
     @DeleteMapping("/{jobIds}")
     @RequiresPermissions("jobLog:delete")
     public void deleteJobLog(@NotBlank(message = "{required}") @PathVariable String jobIds) throws FebsException {
         try {
-            String[] ids = jobIds.split(StringPool.COMMA);
+            String[] ids = jobIds.split(",");
             this.jobLogService.deleteJobLogs(ids);
         } catch (Exception e) {
             message = "删除调度日志失败";
@@ -50,9 +49,9 @@ public class JobLogController extends BaseController {
 
     @PostMapping("excel")
     @RequiresPermissions("jobLog:export")
-    public void export(QueryRequest request, JobLog jobLog, HttpServletResponse response) throws FebsException {
+    public void export(JobLog jobLog, QueryRequest request, HttpServletResponse response) throws FebsException {
         try {
-            List<JobLog> jobLogs = this.jobLogService.findJobLogs(request, jobLog).getRecords();
+            List<JobLog> jobLogs = this.jobLogService.findJobLogs(request, jobLog);
             ExcelKit.$Export(JobLog.class, response).downXlsx(jobLogs, false);
         } catch (Exception e) {
             message = "导出Excel失败";

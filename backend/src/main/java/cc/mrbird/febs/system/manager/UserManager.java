@@ -135,7 +135,7 @@ public class UserManager {
      */
     public void loadUserPermissionRoleRedisCache(List<String> userIds) throws Exception {
         for (String userId : userIds) {
-            User user = userService.getById(userId);
+            User user = userService.findById(userId);
             // 缓存用户角色
             cacheService.saveRoles(user.getUsername());
             // 缓存用户权限
@@ -150,7 +150,7 @@ public class UserManager {
      */
     public void deleteUserRedisCache(String... userIds) throws Exception {
         for (String userId : userIds) {
-            User user = userService.getById(userId);
+            User user = userService.findById(userId);
             if (user != null) {
                 cacheService.deleteUser(user.getUsername());
                 cacheService.deleteRoles(user.getUsername());

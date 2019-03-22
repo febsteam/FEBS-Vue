@@ -3,7 +3,7 @@ package cc.mrbird.febs.system.service.impl;
 import cc.mrbird.febs.common.domain.FebsConstant;
 import cc.mrbird.febs.common.domain.QueryRequest;
 import cc.mrbird.febs.common.service.CacheService;
-import cc.mrbird.febs.common.utils.SortUtil;
+import cc.mrbird.febs.common.service.impl.BaseService;
 import cc.mrbird.febs.common.utils.MD5Util;
 import cc.mrbird.febs.system.dao.UserMapper;
 import cc.mrbird.febs.system.dao.UserRoleMapper;
@@ -13,17 +13,15 @@ import cc.mrbird.febs.system.manager.UserManager;
 import cc.mrbird.febs.system.service.UserConfigService;
 import cc.mrbird.febs.system.service.UserRoleService;
 import cc.mrbird.febs.system.service.UserService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.StringPool;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -31,8 +29,10 @@ import java.util.List;
 @Slf4j
 @Service("userService")
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
-public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+public class UserServiceImpl extends BaseService<User> implements UserService {
 
+    @Autowired
+    private UserMapper userMapper;
     @Autowired
     private UserRoleMapper userRoleMapper;
     @Autowired
@@ -47,29 +47,45 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public User findByName(String username) {
-        return baseMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username));
+        User param = new User();
+        param.setUsername(username);
+        List<User> list = findUserDetail(param, new QueryRequest());
+        return list.isEmpty() ? null : list.get(0);
     }
 
+    @Override
+    public User findById(String userId) {
+        Example example = new Example(User.class);
+        example.createCriteria().andCondition("user_id=", Long.valueOf(userId));
+        List<User> list = this.selectByExample(example);
+        return list.isEmpty() ? null : list.get(0);
+    }
 
     @Override
-    public IPage<User> findUserDetail(User user, QueryRequest request) {
+    public List<User> findUserDetail(User user, QueryRequest request) {
         try {
-            Page<User> page = new Page<>();
-            SortUtil.handlePageSort(request, page, "userId", FebsConstant.ORDER_ASC, false);
-            return this.baseMapper.findUserDetail(page, user);
+            if (request.getSortField() != null) {
+                user.setSortField(request.getSortField());
+                if (StringUtils.equals(FebsConstant.ORDER_ASC, request.getSortOrder()))
+                    user.setSortOrder("asc");
+                else if (StringUtils.equals(FebsConstant.ORDER_DESC, request.getSortOrder()))
+                    user.setSortOrder("desc");
+            }
+            return this.userMapper.findUserDetail(user);
         } catch (Exception e) {
             log.error("查询用户异常", e);
-            return null;
+            return new ArrayList<>();
         }
     }
 
     @Override
     @Transactional
     public void updateLoginTime(String username) throws Exception {
+        Example example = new Example(User.class);
+        example.createCriteria().andCondition("username=", username);
         User user = new User();
         user.setLastLoginTime(new Date());
-
-        this.baseMapper.update(user, new LambdaQueryWrapper<User>().eq(User::getUsername, username));
+        this.userMapper.updateByExampleSelective(user, example);
 
         // 重新将用户信息加载到 redis中
         cacheService.saveUser(username);
@@ -82,10 +98,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setCreateTime(new Date());
         user.setAvatar(User.DEFAULT_AVATAR);
         user.setPassword(MD5Util.encrypt(user.getUsername(), User.DEFAULT_PASSWORD));
-        save(user);
+        this.save(user);
 
         // 保存用户角色
-        String[] roles = user.getRoleId().split(StringPool.COMMA);
+        String[] roles = user.getRoleId().split(",");
         setUserRoles(user, roles);
 
         // 创建用户默认的个性化配置
@@ -101,11 +117,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 更新用户
         user.setPassword(null);
         user.setModifyTime(new Date());
-        updateById(user);
+        this.updateNotNull(user);
 
-        userRoleMapper.delete(new LambdaQueryWrapper<UserRole>().eq(UserRole::getUserId, user.getUserId()));
+        Example example = new Example(UserRole.class);
+        example.createCriteria().andCondition("user_id=", user.getUserId());
+        this.userRoleMapper.deleteByExample(example);
 
-        String[] roles = user.getRoleId().split(StringPool.COMMA);
+        String[] roles = user.getRoleId().split(",");
         setUserRoles(user, roles);
 
         // 重新将用户信息，用户角色信息，用户权限信息 加载到 redis中
@@ -121,8 +139,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         this.userManager.deleteUserRedisCache(userIds);
 
         List<String> list = Arrays.asList(userIds);
-
-        removeByIds(list);
+        this.batchDelete(list, "userId", User.class);
 
         // 删除用户角色
         this.userRoleService.deleteUserRolesByUserId(userIds);
@@ -133,7 +150,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     @Transactional
     public void updateProfile(User user) throws Exception {
-        updateById(user);
+        this.updateNotNull(user);
         // 重新缓存用户信息
         cacheService.saveUser(user.getUsername());
     }
@@ -141,10 +158,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     @Transactional
     public void updateAvatar(String username, String avatar) throws Exception {
+        Example example = new Example(User.class);
+        example.createCriteria().andCondition("username=", username);
         User user = new User();
         user.setAvatar(avatar);
-
-        this.baseMapper.update(user, new LambdaQueryWrapper<User>().eq(User::getUsername, username));
+        this.userMapper.updateByExampleSelective(user, example);
         // 重新缓存用户信息
         cacheService.saveUser(username);
     }
@@ -152,10 +170,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     @Transactional
     public void updatePassword(String username, String password) throws Exception {
+        Example example = new Example(User.class);
+        example.createCriteria().andCondition("username=", username);
         User user = new User();
         user.setPassword(MD5Util.encrypt(username, password));
-
-        this.baseMapper.update(user, new LambdaQueryWrapper<User>().eq(User::getUsername, username));
+        this.userMapper.updateByExampleSelective(user, example);
         // 重新缓存用户信息
         cacheService.saveUser(username);
     }
@@ -188,12 +207,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     @Transactional
     public void resetPassword(String[] usernames) throws Exception {
-        for (String username : usernames) {
+        for (String username: usernames) {
 
+            Example example = new Example(User.class);
+            example.createCriteria().andCondition("username=", username);
             User user = new User();
             user.setPassword(MD5Util.encrypt(username, User.DEFAULT_PASSWORD));
+            this.userMapper.updateByExampleSelective(user, example);
 
-            this.baseMapper.update(user, new LambdaQueryWrapper<User>().eq(User::getUsername, username));
             // 重新将用户信息加载到 redis中
             cacheService.saveUser(username);
         }

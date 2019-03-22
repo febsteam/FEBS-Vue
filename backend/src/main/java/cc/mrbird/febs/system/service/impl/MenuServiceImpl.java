@@ -2,48 +2,58 @@ package cc.mrbird.febs.system.service.impl;
 
 import cc.mrbird.febs.common.domain.FebsConstant;
 import cc.mrbird.febs.common.domain.Tree;
+import cc.mrbird.febs.common.service.impl.BaseService;
 import cc.mrbird.febs.common.utils.TreeUtil;
 import cc.mrbird.febs.system.dao.MenuMapper;
 import cc.mrbird.febs.system.domain.Menu;
 import cc.mrbird.febs.system.manager.UserManager;
 import cc.mrbird.febs.system.service.MenuService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
 
 @Slf4j
 @Service("menuService")
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
-public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements MenuService {
+public class MenuServiceImpl extends BaseService<Menu> implements MenuService {
 
+    @Autowired
+    private MenuMapper menuMapper;
     @Autowired
     private UserManager userManager;
 
     @Override
     public List<Menu> findUserPermissions(String username) {
-        return this.baseMapper.findUserPermissions(username);
+        return this.menuMapper.findUserPermissions(username);
     }
 
     @Override
     public List<Menu> findUserMenus(String username) {
-        return this.baseMapper.findUserMenus(username);
+        return this.menuMapper.findUserMenus(username);
     }
 
     @Override
     public Map<String, Object> findMenus(Menu menu) {
         Map<String, Object> result = new HashMap<>();
         try {
-            LambdaQueryWrapper<Menu> queryWrapper = new LambdaQueryWrapper<>();
-            findMenuCondition(queryWrapper, menu);
-            List<Menu> menus = baseMapper.selectList(queryWrapper);
-
+            Example example = new Example(Menu.class);
+            Example.Criteria criteria = example.createCriteria();
+            if (StringUtils.isNotBlank(menu.getMenuName()))
+                criteria.andCondition("menu_name=", menu.getMenuName());
+            if (StringUtils.isNotBlank(menu.getType()))
+                criteria.andCondition("type=", Long.valueOf(menu.getType()));
+            if (StringUtils.isNotBlank(menu.getCreateTimeFrom()) && StringUtils.isNotBlank(menu.getCreateTimeTo())) {
+                criteria.andCondition("date_format(CREATE_TIME,'%Y-%m-%d') >=", menu.getCreateTimeFrom());
+                criteria.andCondition("date_format(CREATE_TIME,'%Y-%m-%d') <=", menu.getCreateTimeTo());
+            }
+            example.setOrderByClause("order_num");
+            List<Menu> menus = this.selectByExample(example);
             List<Tree<Menu>> trees = new ArrayList<>();
             List<String> ids = new ArrayList<>();
             buildTrees(trees, menus, ids);
@@ -65,20 +75,33 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         return result;
     }
 
-
     @Override
     public List<Menu> findMenuList(Menu menu) {
-        LambdaQueryWrapper<Menu> queryWrapper = new LambdaQueryWrapper<>();
-        findMenuCondition(queryWrapper, menu);
-        queryWrapper.orderByAsc(Menu::getMenuId);
-        return this.baseMapper.selectList(queryWrapper);
+        Example example = new Example(Menu.class);
+        Example.Criteria criteria = example.createCriteria();
+        if (StringUtils.isNotBlank(menu.getMenuName()))
+            criteria.andCondition("menu_name=", menu.getMenuName());
+        if (StringUtils.isNotBlank(menu.getType()))
+            criteria.andCondition("type=", Long.valueOf(menu.getType()));
+        if (StringUtils.isNotBlank(menu.getCreateTimeFrom()) && StringUtils.isNotBlank(menu.getCreateTimeTo())) {
+            criteria.andCondition("date_format(CREATE_TIME,'%Y-%m-%d') >=", menu.getCreateTimeFrom());
+            criteria.andCondition("date_format(CREATE_TIME,'%Y-%m-%d') <=", menu.getCreateTimeTo());
+        }
+        example.setOrderByClause("menu_id");
+        return this.selectByExample(example);
     }
 
     @Override
     @Transactional
     public void createMenu(Menu menu) {
         menu.setCreateTime(new Date());
-        setMenu(menu);
+        if (menu.getParentId() == null)
+            menu.setParentId(0L);
+        if (Menu.TYPE_BUTTON.equals(menu.getType())) {
+            menu.setPath(null);
+            menu.setIcon(null);
+            menu.setComponent(null);
+        }
         this.save(menu);
     }
 
@@ -86,11 +109,17 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     @Transactional
     public void updateMenu(Menu menu) throws Exception {
         menu.setModifyTime(new Date());
-        setMenu(menu);
-        baseMapper.updateById(menu);
+        if (menu.getParentId() == null)
+            menu.setParentId(0L);
+        if (Menu.TYPE_BUTTON.equals(menu.getType())) {
+            menu.setPath(null);
+            menu.setIcon(null);
+            menu.setComponent(null);
+        }
+        this.updateNotNull(menu);
 
         // 查找与这些菜单/按钮关联的用户
-        List<String> userIds = this.baseMapper.findUserIdsByMenuId(String.valueOf(menu.getMenuId()));
+        List<String> userIds = this.menuMapper.findUserIdsByMenuId(String.valueOf(menu.getMenuId()));
         // 重新将这些用户的角色和权限缓存到 Redis中
         this.userManager.loadUserPermissionRoleRedisCache(userIds);
     }
@@ -100,9 +129,9 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     public void deleteMeuns(String[] menuIds) throws Exception {
         for (String menuId : menuIds) {
             // 查找与这些菜单/按钮关联的用户
-            List<String> userIds = this.baseMapper.findUserIdsByMenuId(String.valueOf(menuId));
+            List<String> userIds = this.menuMapper.findUserIdsByMenuId(String.valueOf(menuId));
             // 递归删除这些菜单/按钮
-            this.baseMapper.deleteMenus(menuId);
+            this.menuMapper.deleteMenus(menuId);
             // 重新将这些用户的角色和权限缓存到 Redis中
             this.userManager.loadUserPermissionRoleRedisCache(userIds);
         }
@@ -128,29 +157,4 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
             trees.add(tree);
         });
     }
-
-    private void setMenu(Menu menu) {
-        if (menu.getParentId() == null)
-            menu.setParentId(0L);
-        if (Menu.TYPE_BUTTON.equals(menu.getType())) {
-            menu.setPath(null);
-            menu.setIcon(null);
-            menu.setComponent(null);
-        }
-    }
-
-    private void findMenuCondition(LambdaQueryWrapper<Menu> queryWrapper, Menu menu) {
-        if (StringUtils.isNotBlank(menu.getMenuName())) {
-            queryWrapper.eq(Menu::getMenuName, menu.getMenuName());
-        }
-        if (StringUtils.isNotBlank(menu.getType())) {
-            queryWrapper.eq(Menu::getType, menu.getType());
-        }
-        if (StringUtils.isNotBlank(menu.getCreateTimeFrom()) && StringUtils.isNotBlank(menu.getCreateTimeTo())) {
-            queryWrapper
-                    .ge(Menu::getCreateTime, menu.getCreateTimeFrom())
-                    .le(Menu::getCreateTime, menu.getCreateTimeTo());
-        }
-    }
-
 }

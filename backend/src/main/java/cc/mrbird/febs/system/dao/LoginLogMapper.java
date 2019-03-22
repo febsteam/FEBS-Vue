@@ -1,14 +1,14 @@
 package cc.mrbird.febs.system.dao;
 
 
+import cc.mrbird.febs.common.config.MyMapper;
 import cc.mrbird.febs.system.domain.LoginLog;
 import cc.mrbird.febs.system.domain.User;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 import java.util.List;
 import java.util.Map;
 
-public interface LoginLogMapper extends BaseMapper<LoginLog> {
+public interface LoginLogMapper extends MyMapper<LoginLog> {
 
     /**
      * 获取系统总访问次数

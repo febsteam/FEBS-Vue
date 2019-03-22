@@ -1,13 +1,12 @@
 package cc.mrbird.febs.system.service.impl;
 
-import cc.mrbird.febs.system.dao.UserRoleMapper;
+import cc.mrbird.febs.common.service.impl.BaseService;
 import cc.mrbird.febs.system.domain.UserRole;
 import cc.mrbird.febs.system.service.UserRoleService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.Arrays;
 import java.util.List;
@@ -15,24 +14,28 @@ import java.util.stream.Collectors;
 
 @Service("userRoleService")
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
-public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> implements UserRoleService {
+public class UserRoleServiceImpl extends BaseService<UserRole> implements UserRoleService {
 
 	@Override
 	@Transactional
 	public void deleteUserRolesByRoleId(String[] roleIds) {
-		Arrays.stream(roleIds).forEach(id -> baseMapper.deleteByRoleId(Long.valueOf(id)));
+		List<String> list = Arrays.asList(roleIds);
+		this.batchDelete(list, "roleId", UserRole.class);
 	}
 
 	@Override
 	@Transactional
 	public void deleteUserRolesByUserId(String[] userIds) {
-		Arrays.stream(userIds).forEach(id -> baseMapper.deleteByUserId(Long.valueOf(id)));
+		List<String> list = Arrays.asList(userIds);
+		this.batchDelete(list, "userId", UserRole.class);
 	}
 
 	@Override
 	public List<String> findUserIdsByRoleId(String[] roleIds) {
+		Example example = new Example(UserRole.class);
+		example.createCriteria().andIn("roleId", Arrays.asList(roleIds));
+		List<UserRole> list = this.selectByExample(example);
 
-		List<UserRole> list = baseMapper.selectList(new LambdaQueryWrapper<UserRole>().in(UserRole::getRoleId, (Object) roleIds));
 		return list.stream().map(userRole -> String.valueOf(userRole.getUserId())).collect(Collectors.toList());
 	}
 

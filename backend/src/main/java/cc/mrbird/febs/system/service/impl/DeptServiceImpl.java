@@ -1,30 +1,30 @@
 package cc.mrbird.febs.system.service.impl;
 
-import cc.mrbird.febs.common.domain.FebsConstant;
 import cc.mrbird.febs.common.domain.QueryRequest;
 import cc.mrbird.febs.common.domain.Tree;
+import cc.mrbird.febs.common.service.impl.BaseService;
 import cc.mrbird.febs.common.utils.FebsUtil;
-import cc.mrbird.febs.common.utils.SortUtil;
 import cc.mrbird.febs.common.utils.TreeUtil;
 import cc.mrbird.febs.system.dao.DeptMapper;
 import cc.mrbird.febs.system.domain.Dept;
 import cc.mrbird.febs.system.service.DeptService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
 
 @Slf4j
 @Service("deptService")
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
-public class DeptServiceImpl extends ServiceImpl<DeptMapper, Dept> implements DeptService {
+public class DeptServiceImpl extends BaseService<Dept> implements DeptService {
 
+    @Autowired
+    private DeptMapper deptMapper;
 
     @Override
     public Map<String, Object> findDepts(QueryRequest request, Dept dept) {
@@ -47,16 +47,17 @@ public class DeptServiceImpl extends ServiceImpl<DeptMapper, Dept> implements De
 
     @Override
     public List<Dept> findDepts(Dept dept, QueryRequest request) {
-        QueryWrapper<Dept> queryWrapper = new QueryWrapper<>();
-
+        Example example = new Example(Dept.class);
+        Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isNotBlank(dept.getDeptName()))
-            queryWrapper.lambda().eq(Dept::getDeptName, dept.getDeptName());
-        if (StringUtils.isNotBlank(dept.getCreateTimeFrom()) && StringUtils.isNotBlank(dept.getCreateTimeTo()))
-            queryWrapper.lambda()
-                    .ge(Dept::getCreateTime, dept.getCreateTimeFrom())
-                    .le(Dept::getCreateTime, dept.getCreateTimeTo());
-        SortUtil.handleWrapperSort(request, queryWrapper, "orderNum", FebsConstant.ORDER_ASC, true);
-        return this.baseMapper.selectList(queryWrapper);
+            criteria.andCondition("dept_name=", dept.getDeptName());
+
+        if (StringUtils.isNotBlank(dept.getCreateTimeFrom()) && StringUtils.isNotBlank(dept.getCreateTimeTo())) {
+            criteria.andCondition("date_format(CREATE_TIME,'%Y-%m-%d') >=", dept.getCreateTimeFrom());
+            criteria.andCondition("date_format(CREATE_TIME,'%Y-%m-%d') <=", dept.getCreateTimeTo());
+        }
+        FebsUtil.handleSort(request, example, "order_num");
+        return this.selectByExample(example);
     }
 
     @Override
@@ -73,13 +74,13 @@ public class DeptServiceImpl extends ServiceImpl<DeptMapper, Dept> implements De
     @Transactional
     public void updateDept(Dept dept) {
         dept.setModifyTime(new Date());
-        this.baseMapper.updateById(dept);
+        this.updateNotNull(dept);
     }
 
     @Override
     @Transactional
     public void deleteDepts(String[] deptIds) {
-        Arrays.stream(deptIds).forEach(deptId -> this.baseMapper.deleteDepts(deptId));
+        Arrays.stream(deptIds).forEach(deptId -> this.deptMapper.deleteDepts(deptId));
     }
 
     private void buildTrees(List<Tree<Dept>> trees, List<Dept> depts) {

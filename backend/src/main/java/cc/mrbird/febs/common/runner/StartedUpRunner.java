@@ -1,9 +1,10 @@
 package cc.mrbird.febs.common.runner;
 
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -13,13 +14,13 @@ import java.time.LocalDateTime;
 @Order
 @Slf4j
 @Component
-public class StartedUpRunner implements ApplicationRunner {
+public class StartedUpRunner implements CommandLineRunner {
 
     @Autowired
     private ConfigurableApplicationContext context;
 
     @Override
-    public void run(ApplicationArguments args) {
+    public void run(String... args) {
         if (context.isActive()) {
             log.info(" __    ___   _      ___   _     ____ _____  ____ ");
             log.info("/ /`  / / \\ | |\\/| | |_) | |   | |_   | |  | |_  ");

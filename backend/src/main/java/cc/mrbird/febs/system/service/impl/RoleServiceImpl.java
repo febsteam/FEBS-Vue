@@ -1,7 +1,8 @@
 package cc.mrbird.febs.system.service.impl;
 
 import cc.mrbird.febs.common.domain.QueryRequest;
-import cc.mrbird.febs.common.utils.SortUtil;
+import cc.mrbird.febs.common.service.impl.BaseService;
+import cc.mrbird.febs.common.utils.FebsUtil;
 import cc.mrbird.febs.system.dao.RoleMapper;
 import cc.mrbird.febs.system.dao.RoleMenuMapper;
 import cc.mrbird.febs.system.domain.Role;
@@ -10,18 +11,15 @@ import cc.mrbird.febs.system.manager.UserManager;
 import cc.mrbird.febs.system.service.RoleMenuServie;
 import cc.mrbird.febs.system.service.RoleService;
 import cc.mrbird.febs.system.service.UserRoleService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.StringPool;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -29,8 +27,10 @@ import java.util.List;
 @Slf4j
 @Service("roleService")
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
-public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements RoleService {
+public class RoleServiceImpl extends BaseService<Role> implements RoleService {
 
+    @Autowired
+    private RoleMapper roleMapper;
     @Autowired
     private RoleMenuMapper roleMenuMapper;
     @Autowired
@@ -41,35 +41,36 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     private UserManager userManager;
 
     @Override
-    public IPage<Role> findRoles(Role role, QueryRequest request) {
+    public List<Role> findRoles(Role role, QueryRequest request) {
         try {
-            LambdaQueryWrapper<Role> queryWrapper = new LambdaQueryWrapper<>();
-
+            Example example = new Example(Role.class);
+            Example.Criteria criteria = example.createCriteria();
             if (StringUtils.isNotBlank(role.getRoleName())) {
-                queryWrapper.eq(Role::getRoleName, role.getRoleName());
+                criteria.andCondition("role_name=", role.getRoleName());
             }
             if (StringUtils.isNotBlank(role.getCreateTimeFrom()) && StringUtils.isNotBlank(role.getCreateTimeTo())) {
-                queryWrapper
-                        .ge(Role::getCreateTime, role.getCreateTimeFrom())
-                        .le(Role::getCreateTime, role.getCreateTimeTo());
+                criteria.andCondition("date_format(CREATE_TIME,'%Y-%m-%d') >=", role.getCreateTimeFrom());
+                criteria.andCondition("date_format(CREATE_TIME,'%Y-%m-%d') <=", role.getCreateTimeTo());
             }
-            Page<Role> page = new Page<>();
-            SortUtil.handlePageSort(request, page, true);
-            return this.page(page,queryWrapper);
+            FebsUtil.handleSort(request, example, "role_id");
+            return this.selectByExample(example);
         } catch (Exception e) {
             log.error("获取角色信息失败", e);
-            return null;
+            return new ArrayList<>();
         }
     }
 
     @Override
     public List<Role> findUserRole(String userName) {
-        return baseMapper.findUserRole(userName);
+        return this.roleMapper.findUserRole(userName);
     }
 
     @Override
     public Role findByName(String roleName) {
-        return baseMapper.selectOne(new LambdaQueryWrapper<Role>().eq(Role::getRoleName, roleName));
+        Example example = new Example(Role.class);
+        example.createCriteria().andCondition("lower(role_name)=", roleName.toLowerCase());
+        List<Role> list = this.selectByExample(example);
+        return list.isEmpty() ? null : list.get(0);
     }
 
     @Override
@@ -77,7 +78,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         role.setCreateTime(new Date());
         this.save(role);
 
-        String[] menuIds = role.getMenuId().split(StringPool.COMMA);
+        String[] menuIds = role.getMenuId().split(",");
         setRoleMenus(role, menuIds);
     }
 
@@ -87,8 +88,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         List<String> userIds = this.userRoleService.findUserIdsByRoleId(roleIds);
 
         List<String> list = Arrays.asList(roleIds);
-
-        baseMapper.deleteBatchIds(list);
+        this.batchDelete(list, "roleId", Role.class);
 
         this.roleMenuService.deleteRoleMenusByRoleId(roleIds);
         this.userRoleService.deleteUserRolesByRoleId(roleIds);
@@ -105,11 +105,13 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         List<String> userIds = this.userRoleService.findUserIdsByRoleId(roleId);
 
         role.setModifyTime(new Date());
-        baseMapper.updateById(role);
+        this.updateNotNull(role);
 
-        roleMenuMapper.delete(new LambdaQueryWrapper<RoleMenu>().eq(RoleMenu::getRoleId, role.getRoleId()));
+        Example example = new Example(RoleMenu.class);
+        example.createCriteria().andCondition("role_id=", role.getRoleId());
+        this.roleMenuMapper.deleteByExample(example);
 
-        String[] menuIds = role.getMenuId().split(StringPool.COMMA);
+        String[] menuIds = role.getMenuId().split(",");
         setRoleMenus(role, menuIds);
 
         // 重新将这些用户的角色和权限缓存到 Redis中
