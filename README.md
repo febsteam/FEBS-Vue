@@ -7,6 +7,11 @@
 
 FEBS-Vue为[FEBS-Shiro](https://github.com/wuyouzhuguli/FEBS-Shiro)的前后端分离版本，前端使用Vue全家桶，组件库采用[Ant-Design-Vue](https://vuecomponent.github.io/ant-design-vue/docs/vue/introduce-cn/)
 
+### 项目文档
+
+[https://mrbird.cc/FEBS-Vue-Document.html](https://mrbird.cc/FEBS-Vue-Document.html)
+
+
 ### 预览地址
 
 服务器带宽小，初次加载较慢，请耐心等待：[http://111.230.157.133:8081](http://111.230.157.133:8081)。
@@ -57,7 +62,6 @@ yarn install
 yarn start
 ```
 
-> 详细文档编写中...
 
 ### 功能模块
 ```
