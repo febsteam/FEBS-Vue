@@ -19,7 +19,7 @@ spring:
         # 数据源-1，名称为 primary
         primary:
           username: root
-          password: 123456
+          password: root
           driver-class-name: com.mysql.cj.jdbc.Driver
           url: jdbc:mysql://127.0.0.1:3306/febs_shiro_jwt?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
         # 数据源-2，名称为 test
@@ -39,7 +39,7 @@ spring:
     time-zone: GMT+8
 
   redis:
-    host: 127.0.0.1
+    host: 115.29.140.3
     port: 6379
     password: 
     jedis:
@@ -78,6 +78,6 @@ febs:
         num: 1000
   shiro:
     # 后端免认证接口 url
-    anonUrl: /login,/logout/**,/regist,/user/check/**
+    anonUrl: /login,/logout/**,/regist,/user/check/**,/service/send
     # token有效期，单位秒
     jwtTimeOut: 3600

@@ -37,7 +37,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
+        </dependency>>
         <!-- 动态数据源 -->
         <dependency>
             <groupId>com.baomidou</groupId>
