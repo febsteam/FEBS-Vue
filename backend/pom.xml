@@ -63,12 +63,6 @@
             <artifactId>freemarker</artifactId>
             <version>2.3.29</version>
         </dependency>
-        <!-- sql 打印 -->
-        <dependency>
-            <groupId>p6spy</groupId>
-            <artifactId>p6spy</artifactId>
-            <version>3.8.5</version>
-        </dependency>
         <!-- commons -->
         <dependency>
             <groupId>org.apache.commons</groupId>
